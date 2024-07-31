@@ -1,47 +1,50 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CarsService } from './cars.service';
+import { CreateCarDto } from './dto';
+import { UpdateCarDto } from './dto';
 
 @Controller('cars')
+// ! Vaildar pipe a nivel de controlador
+// @UsePipes(ValidationPipe)
 export class CarsController {
-    constructor(private readonly carsService: CarsService) {}
+  constructor(private readonly carsService: CarsService) {}
 
-    @Get()
-    getAllCars() {
-        return this.carsService.findAll();
-    }
+  @Get()
+  getAllCars() {
+    return this.carsService.findAll();
+  }
 
-    @Get(':id')
-    getCarById(@Param('id', ParseIntPipe) id: number) {
-        return this.carsService.findOneById(Number(id));
-    }
+  @Get(':id')
+  getCarById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.carsService.findOneById(id);
+  }
 
-    @Post()
-    createCar(@Body() body: any) {
-        console.log(body);
+  @Post()
+  // Validar DTO
+  // @UsePipes(ValidationPipe)
+  createCar(@Body() createCarDto: CreateCarDto) {
+    return this.carsService.create(createCarDto);
+  }
 
-        return {
-            ok: true,
-            method: 'POST'
-        }
-    }
+  @Patch(':id')
+  updateCar(
+    @Body() updateCarDto: UpdateCarDto,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    return this.carsService.update(id, updateCarDto);
+  }
 
-    @Patch(':id')
-    updateCar(@Body() body: any, @Param('id', ParseIntPipe) id: number) {
-        console.log(body);
-
-        return {
-            ok: true,
-            method: 'POST'
-        }
-    }
-
-    @Delete(':id')
-    deleteCar(@Param('id', ParseIntPipe) id: number) {
-        console.log(id);
-
-        return {
-            ok: true,
-            method: 'POST'
-        }
-    }
+  @Delete(':id')
+  deleteCar(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    this.carsService.delete(id);
+  }
 }
